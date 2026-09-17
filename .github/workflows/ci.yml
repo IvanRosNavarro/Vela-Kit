@@ -6,6 +6,12 @@ on:
   push:
     branches: [main]
     tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      browser_ref:
+        description: 'Rama o tag de Vela Browser con la que probar el kit'
+        required: false
+        default: 'main'
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -54,11 +60,11 @@ jobs:
         with:
           path: kit
 
-      - name: Checkout Vela Browser (main)
+      - name: Checkout Vela Browser
         uses: actions/checkout@v6
         with:
           repository: IvanRosNavarro/Vela-Browser
-          ref: main
+          ref: ${{ inputs.browser_ref || 'main' }}
           path: browser
 
       - name: ¿Consume vela-kit?
