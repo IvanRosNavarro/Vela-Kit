@@ -1,8 +1,8 @@
 {
   "name": "vela-kit",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
-  "description": "Base común de las aplicaciones Vela: temas, IPC, logger, comandos, CSP, SQLite, ventana y UI",
+  "description": "Base común de las aplicaciones Vela: temas, IPC, logger, comandos, CSP, cifrado, SQLite, ventana y UI",
   "author": {
     "name": "Iván Ros",
     "email": "it@tcgfactory.com"
@@ -14,6 +14,7 @@
     "./theme/themes": "./src/theme/themes/index.ts",
     "./logger": "./src/logger/index.ts",
     "./ipc": "./src/ipc/index.ts",
+    "./crypto": "./src/crypto/index.ts",
     "./commands": "./src/commands/index.ts",
     "./security": "./src/security/index.ts",
     "./ui": "./src/ui/index.ts",
