@@ -1,0 +1,54 @@
+{
+  "name": "vela-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Base común de las aplicaciones Vela: temas, IPC y logger",
+  "author": {
+    "name": "Iván Ros",
+    "email": "it@tcgfactory.com"
+  },
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "exports": {
+    "./theme": "./src/theme/index.ts",
+    "./logger": "./src/logger/index.ts",
+    "./ipc": "./src/ipc/index.ts"
+  },
+  "files": [
+    "src",
+    "!src/**/*.test.ts"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "pnpm@9.12.0",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "electron": ">=42.0.0",
+    "zod": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "electron": {
+      "optional": true
+    },
+    "zod": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "22.20.3",
+    "electron": "42.11.4",
+    "typescript": "5.4.5",
+    "vitest": "4.1.11",
+    "zod": "4.4.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron",
+      "esbuild"
+    ]
+  }
+}
