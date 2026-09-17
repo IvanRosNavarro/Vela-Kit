@@ -39,3 +39,105 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+  # Regla nº 1 del kit: ningún cambio puede romper a Vela Browser. Compila y
+  # prueba el navegador (main) con esta versión del kit enlazada en lugar del
+  # tag que tenga fijado. Mientras el navegador no dependa de vela-kit, sale
+  # en verde con un aviso.
+  vela-browser:
+    name: Vela Browser con este kit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout vela-kit
+        uses: actions/checkout@v6
+        with:
+          path: kit
+
+      - name: Checkout Vela Browser (main)
+        uses: actions/checkout@v6
+        with:
+          repository: IvanRosNavarro/Vela-Browser
+          ref: main
+          path: browser
+
+      - name: ¿Consume vela-kit?
+        id: consumers
+        shell: bash
+        working-directory: browser
+        run: |
+          pkgs=$(node -e '
+            const fs = require("fs");
+            const path = require("path");
+            const out = [];
+            for (const dir of fs.readdirSync("packages")) {
+              const file = path.join("packages", dir, "package.json");
+              if (!fs.existsSync(file)) continue;
+              const pkg = JSON.parse(fs.readFileSync(file, "utf8"));
+              const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+              if (deps["vela-kit"]) out.push(path.join("packages", dir));
+            }
+            process.stdout.write(out.join(" "));
+          ')
+          if [ -z "$pkgs" ]; then
+            echo "::notice::Vela Browser todavía no depende de vela-kit; no hay nada que comprobar."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Paquetes que consumen vela-kit: $pkgs"
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "packages=$pkgs" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup pnpm
+        if: steps.consumers.outputs.enabled == 'true'
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.12.0
+
+      - name: Setup Node
+        if: steps.consumers.outputs.enabled == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: 'browser/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: |
+            kit/pnpm-lock.yaml
+            browser/pnpm-lock.yaml
+
+      - name: Install (vela-kit)
+        if: steps.consumers.outputs.enabled == 'true'
+        working-directory: kit
+        run: pnpm install --frozen-lockfile
+
+      - name: Install (Vela Browser)
+        if: steps.consumers.outputs.enabled == 'true'
+        working-directory: browser
+        run: pnpm install --frozen-lockfile
+
+      # Igual que `pnpm kit:link` del navegador: se sustituye el enlace de
+      # node_modules sin tocar el lockfile.
+      - name: Enlazar este kit
+        if: steps.consumers.outputs.enabled == 'true'
+        shell: bash
+        working-directory: browser
+        run: |
+          for pkg in ${{ steps.consumers.outputs.packages }}; do
+            rm -rf "$pkg/node_modules/vela-kit"
+            ln -s "$GITHUB_WORKSPACE/kit" "$pkg/node_modules/vela-kit"
+            echo "$pkg/node_modules/vela-kit -> $(readlink -f "$pkg/node_modules/vela-kit")"
+          done
+
+      - name: Typecheck (Vela Browser)
+        if: steps.consumers.outputs.enabled == 'true'
+        working-directory: browser
+        run: pnpm typecheck
+
+      - name: Test main (Vela Browser)
+        if: steps.consumers.outputs.enabled == 'true'
+        working-directory: browser
+        run: pnpm --filter @vela/main test
+
+      - name: Build (Vela Browser)
+        if: steps.consumers.outputs.enabled == 'true'
+        working-directory: browser
+        run: pnpm build
