@@ -72,11 +72,17 @@ const NAMED_KEYS: Record<string, string> = {
   '=': 'Equal',
 };
 
+/** Códigos canónicos que ya son la forma normalizada (`Comma`, `ArrowUp`…). */
+const CANONICAL_CODES = new Set(Object.values(NAMED_KEYS));
+
 function parseKey(combo: string, raw: string): string {
   const k = raw.trim();
   if (/^[0-9]$/.test(k)) return `Digit${k}`;
   if (/^[a-zA-Z]$/.test(k)) return `Key${k.toUpperCase()}`;
   if (/^F([1-9]|1[0-9]|2[0-4])$/i.test(k)) return k.toUpperCase();
+  // La forma canónica (salida de normalizeShortcutString o de un
+  // KeyboardEvent.code) también se acepta: normalizar es idempotente.
+  if (/^Key[A-Z]$/.test(k) || /^Digit[0-9]$/.test(k) || CANONICAL_CODES.has(k)) return k;
   const named = NAMED_KEYS[k];
   if (!named) throw new InvalidShortcutError(combo, `tecla desconocida "${raw}"`);
   return named;

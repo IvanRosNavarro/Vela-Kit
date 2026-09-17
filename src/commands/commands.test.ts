@@ -82,6 +82,17 @@ describe('atajos', () => {
     expect(() => normalizeShortcutString('')).toThrow(InvalidShortcutError);
   });
 
+  it('normalizar es idempotente y acepta códigos de KeyboardEvent', () => {
+    for (const combo of ['Ctrl+Shift+P', 'Cmd+,', 'Alt+1', 'Ctrl+Up', 'F5', 'Ctrl+Shift+Tab']) {
+      const once = normalizeShortcutString(combo);
+      expect(normalizeShortcutString(once)).toBe(once);
+    }
+    expect(normalizeShortcutString('Ctrl+Shift+KeyP')).toBe('Ctrl+Shift+KeyP');
+    expect(normalizeShortcutString('Meta+Comma')).toBe('Meta+Comma');
+    expect(normalizeShortcutString('Ctrl+ArrowUp')).toBe('Ctrl+ArrowUp');
+    expect(() => normalizeShortcutString('Ctrl+Keyp')).toThrow(InvalidShortcutError);
+  });
+
   it('respeta reservados y duplicados', () => {
     const table = new ShortcutTable({ reserved: ['ctrl+shift+p'] });
     expect(() => table.register('Ctrl+Shift+P', 'x', () => {})).toThrow(ReservedShortcutError);
