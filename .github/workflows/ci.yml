@@ -114,6 +114,14 @@ jobs:
         working-directory: browser
         run: pnpm install --frozen-lockfile
 
+      # Vela Browser arrastra tests de main que ya fallan en su rama main (su CI
+      # no los ejecuta). Se toma como referencia el resultado con el tag que
+      # tiene fijado y solo se falla si el kit enlazado rompe tests nuevos.
+      - name: Tests main con el tag fijado (referencia)
+        if: steps.consumers.outputs.enabled == 'true'
+        working-directory: browser/packages/main
+        run: npx vitest run --reporter=json --outputFile="$RUNNER_TEMP/tests-baseline.json" || true
+
       # Igual que `pnpm kit:link` del navegador: se sustituye el enlace de
       # node_modules sin tocar el lockfile.
       - name: Enlazar este kit
@@ -134,8 +142,41 @@ jobs:
 
       - name: Test main (Vela Browser)
         if: steps.consumers.outputs.enabled == 'true'
-        working-directory: browser
-        run: pnpm --filter @vela/main test
+        working-directory: browser/packages/main
+        shell: bash
+        run: |
+          npx vitest run --reporter=json --outputFile="$RUNNER_TEMP/tests-kit.json" || true
+          node -e '
+            const fs = require("fs");
+            const read = (f) => {
+              if (!fs.existsSync(f)) return null;
+              const r = JSON.parse(fs.readFileSync(f, "utf8"));
+              const failed = new Set();
+              for (const file of r.testResults ?? []) {
+                if (file.status === "failed" && (file.assertionResults ?? []).length === 0) {
+                  failed.add(`${file.name} (fichero)`);
+                }
+                for (const t of file.assertionResults ?? []) {
+                  if (t.status === "failed") failed.add(`${file.name} > ${t.fullName}`);
+                }
+              }
+              return { failed, total: r.numTotalTests ?? 0 };
+            };
+            const base = read(process.argv[1]);
+            const kit = read(process.argv[2]);
+            if (!kit) { console.log("::error::vitest no produjo resultados con el kit enlazado"); process.exit(1); }
+            const known = base ? base.failed : new Set();
+            const regressions = [...kit.failed].filter((t) => !known.has(t));
+            console.log(`Tests: ${kit.total}. Fallos ya existentes con el tag: ${known.size}. Fallos con el kit: ${kit.failed.size}.`);
+            if (base && kit.total < base.total) {
+              console.log(`::error::Con el kit se ejecutan menos tests (${kit.total}) que con el tag (${base.total}).`);
+              process.exit(1);
+            }
+            if (regressions.length > 0) {
+              for (const t of regressions) console.log(`::error::Regresión con el kit: ${t}`);
+              process.exit(1);
+            }
+          ' "$RUNNER_TEMP/tests-baseline.json" "$RUNNER_TEMP/tests-kit.json"
 
       - name: Build (Vela Browser)
         if: steps.consumers.outputs.enabled == 'true'
