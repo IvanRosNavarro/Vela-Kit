@@ -5,3 +5,11 @@ export type { Toast, ToastState, ToastVariant } from './toastStore';
 export { Toaster } from './Toaster';
 export { ErrorBoundary } from './ErrorBoundary';
 export type { ErrorBoundaryProps } from './ErrorBoundary';
+export { TitleBar, NO_DRAG_STYLE } from './TitleBar';
+export type { TitleBarProps, WindowControlHandlers } from './TitleBar';
+export {
+  TITLEBAR_HEIGHT,
+  WIN32_CONTROLS_WIDTH,
+  DARWIN_TRAFFIC_LIGHT_CLEARANCE,
+} from '../window/constants';
+export type { DesktopPlatform } from '../window/constants';
