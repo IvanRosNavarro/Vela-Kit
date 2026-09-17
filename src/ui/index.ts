@@ -13,3 +13,7 @@ export {
   DARWIN_TRAFFIC_LIGHT_CLEARANCE,
 } from '../window/constants';
 export type { DesktopPlatform } from '../window/constants';
+export { CommandPalette } from './CommandPalette';
+export type { CommandPaletteProps, PaletteItem } from './CommandPalette';
+export { formatShortcut, shortcutFromKeyEvent } from './shortcutLabel';
+export type { KeyEventLike, ShortcutPlatform } from './shortcutLabel';
