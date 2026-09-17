@@ -9,7 +9,7 @@ export const THEME_VARS = {
   // Sidebar
   '--vela-sidebar-bg': '#16181d',
   '--vela-sidebar-fg': '#e6e8ee',
-  '--vela-sidebar-active-bg': 'rgba(120, 140, 255, 0.16)',
+  '--vela-sidebar-active-bg': 'rgba(70, 181, 160, 0.16)',
   '--vela-sidebar-hover-bg': 'rgba(255, 255, 255, 0.05)',
 
   // Title bar
@@ -23,17 +23,17 @@ export const THEME_VARS = {
   '--vela-addressbar-fg': '#e6e8ee',
   '--vela-addressbar-fg-muted': '#8c93a3',
   '--vela-suggestion-bg': '#1c1f25',
-  '--vela-suggestion-bg-active': 'rgba(125, 140, 255, 0.18)',
+  '--vela-suggestion-bg-active': 'rgba(70, 181, 160, 0.18)',
 
   // Estados
-  '--vela-accent': '#7d8cff',
+  '--vela-accent': '#46b5a0',
   '--vela-accent-fg': '#ffffff',
   '--vela-success': '#6ad8a4',
   '--vela-warning': '#f5c76a',
   '--vela-danger': '#ff8a8a',
 
   // Tabs
-  '--vela-tab-active-bg': 'rgba(125, 140, 255, 0.18)',
+  '--vela-tab-active-bg': 'rgba(70, 181, 160, 0.18)',
   '--vela-tab-active-fg': '#ffffff',
   '--vela-tab-discarded-opacity': '0.5',
   '--vela-folder-marker-w': '3px',
